@@ -37,8 +37,12 @@ CLASS_PATH = os.path.join(
 
 HOME_IMAGE = os.path.join(
     BASE_DIR,
-    "home_page.JPG"
+    "home_page.jpg"
 )
+if not os.path.exists(HOME_IMAGE):
+    alt_home = os.path.join(BASE_DIR, "home_page.JPG")
+    if os.path.exists(alt_home):
+        HOME_IMAGE = alt_home
 
 # =====================================================
 # Load Model
