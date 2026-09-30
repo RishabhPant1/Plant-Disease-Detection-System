@@ -10,9 +10,8 @@ Validates uploaded images before plant disease prediction:
 
 import os
 
-# Enforce offline / local loading from cached weights
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
+# Suppress verbose symlink warning on platforms without developer symlinks
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 import numpy as np
 from PIL import Image
@@ -39,12 +38,16 @@ CANDIDATE_LABELS = [
 
 def load_validator(model_name: str = "openai/clip-vit-base-patch32"):
     """
-    Loads CLIP model and processor from local cache for zero-shot leaf classification.
+    Loads CLIP model and processor for zero-shot leaf classification.
+    Tries loading from local cache first for fast offline startup;
+    downloads from Hugging Face Hub if not cached in the environment.
     """
-    # Enforce offline / local loading from cached weights
-    os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    model = CLIPModel.from_pretrained(model_name, local_files_only=True)
-    processor = CLIPProcessor.from_pretrained(model_name, local_files_only=True)
+    try:
+        model = CLIPModel.from_pretrained(model_name, local_files_only=True)
+        processor = CLIPProcessor.from_pretrained(model_name, local_files_only=True)
+    except Exception:
+        model = CLIPModel.from_pretrained(model_name)
+        processor = CLIPProcessor.from_pretrained(model_name)
     model.eval()
     return model, processor
 
